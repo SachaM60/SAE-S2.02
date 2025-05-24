@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SAE_S2._02
+{
+    public class ArretAdjacent
+    {
+        private Arret arret;
+        private double distance;
+        private List<int> ligne;
+
+        public ArretAdjacent(Arret arret, double distance, List<int> ligne)
+        {
+            this.arret = arret;
+            this.distance = distance;
+            this.ligne = ligne;
+        }
+
+        public double Distance { get => distance; set => distance = value; }
+        public List<int> Ligne { get => ligne; set => ligne = value; }
+        public Arret Arret { get => arret; set => arret = value; }
+
+        public override string ToString()
+        {
+            return $"ArretAdjacent: {arret.Nom}, Distance: {distance}, Lignes: [{string.Join(", ", ligne)}]";
+        }
+    }
+}
