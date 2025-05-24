@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SAE_S2._02
 {
+    /// <summary>
+    /// Classe représentant un arrêt de transport en commun, avec ses coordonnées, ses prédécesseurs et ses successeurs.
+    /// </summary>
     public class Arret
     {
         private string nom;
@@ -35,7 +38,14 @@ namespace SAE_S2._02
             {
                 this.successeurs.Add(arretAdjacent);
             }
-            
+        }
+
+        public void Add_predecesseur(ArretAdjacent arretAdjacent)
+        {
+            if (arretAdjacent != null)
+            {
+                this.predecesseurs.Add(arretAdjacent);
+            }
         }
 
         public override string ToString()

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SAE_S2._02
 {
+    /// <summary>
+    /// Classe représentant un arrêt adjacent à un autre arrêt, avec une distance et une liste de lignes associées.
+    /// </summary>
     public class ArretAdjacent
     {
         private Arret arret;
