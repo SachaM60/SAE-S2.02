@@ -1,9 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using MySql.Data.MySqlClient;
 using SAE_S2._02;
 using System.Collections.Generic;
 
+BD.Ouverture();
 int[,] construction_matrice(List<Arret> arrets)
 {
+    /// Fonction qui sert à construire une matrice d'adjacence à partir d'une liste d'arrêts.
     int n = arrets.Count;
     int[,] matrice = new int[n, n];
     for (int i = 0; i < n; i++)
@@ -23,6 +26,24 @@ int[,] construction_matrice(List<Arret> arrets)
     }
     return matrice;
 }
+
+
+List<string> nom = new List<string>();
+// Update the type of the 'pos' list to match the expected type in BD.LecturePosition  
+List<Tuple<double, double>> pos = new List<Tuple<double, double>>();
+BD.LectureNomArret(ref nom, 1);
+BD.LecturePosition(ref pos, 1);
+
+foreach (string n in nom)
+{
+    Console.WriteLine(n);
+}
+
+foreach (var position in pos)
+{
+    Console.WriteLine($"Latitude: {position.Item1}, Longitude: {position.Item2}");
+}
+
 
 
 Arret arret1 = new Arret("Arret1", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
@@ -83,13 +104,8 @@ Arret arret_actuel = arret1;
 Arret arret_stop = arret6;
 string chemin="";
 
-while (arret_actuel.Successeurs.Count > 0 && arret_actuel != arret_stop)
-{
-    foreach (ArretAdjacent successeur in arret_actuel.Successeurs)
-    {
-        distance_total += (int)successeur.Distance; // On additionne la distance de chaque successeur
-        arret_actuel = successeur.Arret; // On passe au successeur suivant
-    }
-}
 
-Console.WriteLine($"Distance totale pour aller de {arret1.Nom} à {arret_stop.Nom}: {distance_total}");
+chemin = Reseau.Djikstra(arret_actuel, arret_stop);
+
+Console.WriteLine($"Chemin le plus court de {arret1.Nom} à {arret_stop.Nom}: {chemin}");
+BD.Fermeture();
