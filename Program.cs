@@ -27,24 +27,22 @@ int[,] construction_matrice(List<Arret> arrets)
     return matrice;
 }
 
+int nbarrets = 274; 
+List<string> nom = new List<string>(nbarrets);  
+List<Tuple<double, double>> pos = new List<Tuple<double, double>>(nbarrets);
 
-List<string> nom = new List<string>();
-// Update the type of the 'pos' list to match the expected type in BD.LecturePosition  
-List<Tuple<double, double>> pos = new List<Tuple<double, double>>();
-BD.LectureNomArret(ref nom, 1);
-BD.LecturePosition(ref pos, 1);
+BD.LectureNomArret(ref nom, ref pos, nbarrets);
 
-foreach (string n in nom)
+List<Arret> vraisArrets = new List<Arret>(nbarrets);
+
+for (int i =0 ; i < nbarrets; i++)
 {
-    Console.WriteLine(n);
+    vraisArrets.Add(new Arret(nom[i], pos[i].Item1, pos[i].Item2, new List<ArretAdjacent>(), new List<ArretAdjacent>()));
 }
 
-foreach (var position in pos)
-{
-    Console.WriteLine($"Latitude: {position.Item1}, Longitude: {position.Item2}");
-}
+Console.WriteLine($"{vraisArrets.Last()}");
 
-
+Console.WriteLine($"{vraisArrets.Count} arrêts chargés depuis la base de données.");
 
 Arret arret1 = new Arret("Arret1", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
 Arret arret2 = new Arret("Arret2", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
@@ -79,7 +77,7 @@ List<Arret> arrets = new List<Arret>
     arret1, arret2, arret3, arret4, arret5, arret6
 };
 
- int[,] matrice = construction_matrice(arrets);
+int[,] matrice = construction_matrice(arrets);
 Console.WriteLine($"Matrice d'adjacence des arrêts :");
 
 for (int i = 0; i < matrice.GetLength(0); i++)
@@ -97,8 +95,6 @@ for (int i = 0; i < matrice.GetLength(0); i++)
 Graphes Reseau = new Graphes(arrets);
 
 Console.WriteLine(Reseau.ToString());
-
-int distance_total = 0;
 
 Arret arret_actuel = arret1;
 Arret arret_stop = arret6;

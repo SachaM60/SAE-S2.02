@@ -36,35 +36,19 @@ namespace SAE_S2._02
             }
         }
 
-        public static void LectureNomArret(ref List<string> nomArrets, int nb_arrets)
+        public static void LectureNomArret(ref List<string> nomArrets, ref List<Tuple<double, double>> positionArrets, int nb_arrets)
         {
-            for (int i = 0; i <= nb_arrets; i++)
+            string reqSQL = $"SELECT nom_arret, latitude_arret, longitude_arret FROM Arret;";
+            MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
             {
-                string reqSQL = $"SELECT nom_arret FROM Arret WHERE id_arret = {i};";
-                MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
-                MySqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    nomArrets.Add(reader.GetString(0));
-                }
-                reader.Close();
+                nomArrets.Add(reader.GetString(0));
+                positionArrets.Add(new Tuple<double, double>(reader.GetDouble(1), reader.GetDouble(2)));
             }
+            reader.Close();
 
-        }
-
-        public static void LecturePosition(ref List<Tuple<double, double>> positionArrets, int nb_arrets)
-        {
-            for (int i = 0; i <= nb_arrets; i++)
-            {
-                string reqSQL = $"SELECT latitude_arret, longitude_arret FROM Arret WHERE id_arret = {i};";
-                MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
-                MySqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    positionArrets.Add(new Tuple<double, double>(reader.GetDouble(0), reader.GetDouble(1)));
-                }
-                reader.Close();
-            }
         }
     }
+
 }
