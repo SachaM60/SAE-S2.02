@@ -17,6 +17,7 @@ namespace SAE_S2._02
 
         public ArretAdjacent(Arret arret, double distance, List<int> ligne)
         {
+            // Constructeur de la classe ArretAdjacent, initialise les propriétés de l'arrêt adjacent
             this.arret = arret;
             this.distance = distance;
             this.ligne = ligne;
@@ -28,6 +29,7 @@ namespace SAE_S2._02
 
         public override string ToString()
         {
+            // Retourne une représentation en chaîne de caractères de l'arrêt adjacent, incluant son nom, sa distance et les lignes associées
             return $"ArretAdjacent: {arret.Nom}, Distance: {distance}, Lignes: [{string.Join(", ", ligne)}]";
         }
     }

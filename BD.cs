@@ -17,6 +17,7 @@ namespace SAE_S2._02
 
         public static void Ouverture()
         {
+            // Connexion à la base de données MySQL
             string serveur = "10.1.139.236";
             string login = "d3";
             string mdp = "based3";
@@ -29,6 +30,7 @@ namespace SAE_S2._02
 
         public static void Fermeture()
         {
+            // Fermeture de la connexion à la base de données
             if (conn != null && conn.State == System.Data.ConnectionState.Open)
             {
                 conn.Close();
@@ -36,18 +38,74 @@ namespace SAE_S2._02
             }
         }
 
-        public static void LectureNomArret(ref List<string> nomArrets, ref List<Tuple<double, double>> positionArrets, int nb_arrets)
+        public static void LectureNomArret(ref List<string> nomArrets, ref List<Tuple<double, double>> positionArrets, int nb_arrets, ref List<int> idArret)
         {
-            string reqSQL = $"SELECT nom_arret, latitude_arret, longitude_arret FROM Arret;";
+            // Lecture des noms et positions des arrêts depuis la base de données
+            string reqSQL = $"SELECT nom_arret, latitude_arret, longitude_arret, id_arret FROM Arret;";
             MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
             MySqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 nomArrets.Add(reader.GetString(0));
                 positionArrets.Add(new Tuple<double, double>(reader.GetDouble(1), reader.GetDouble(2)));
+                idArret.Add(reader.GetInt32(3));
             }
             reader.Close();
 
+        }
+
+        public static int LectureNombreArret()
+        {
+            // Lecture du nombre d'arrêts dans la base de données
+            string reqSQL = "SELECT COUNT(*) FROM Arret;";
+            MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
+            int nombreArrets = Convert.ToInt32(cmd.ExecuteScalar());
+            return nombreArrets;
+        }
+
+        public static Dictionary<int, List<int>> LectureSuivant()
+        {
+            // Lecture des successeurs des arrêts depuis la base de données
+            Dictionary<int, List<int>> listeArretsAdjacents = new Dictionary<int, List<int>>();
+            string reqSQL = $"SELECT * FROM Suivant;";
+            MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!listeArretsAdjacents.ContainsKey(reader.GetInt32(0)))
+                {
+                    listeArretsAdjacents[reader.GetInt32(0)] = new List<int>();
+                    listeArretsAdjacents[reader.GetInt32(0)].Add(reader.GetInt32(1));
+                }
+                else
+                {
+                    listeArretsAdjacents[reader.GetInt32(0)].Add(reader.GetInt32(1));
+                }
+            }
+            reader.Close();
+            return listeArretsAdjacents;
+        }
+        public static Dictionary<int, List<int>> LecturePredecesseur()
+        {
+            // Lecture des prédécesseurs des arrêts depuis la base de données
+            Dictionary<int, List<int>> ArretByID = new Dictionary<int, List<int>>();
+            string reqSQL = $"SELECT * FROM Suivant;";
+            MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!ArretByID.ContainsKey(reader.GetInt32(1)))
+                {
+                    ArretByID[reader.GetInt32(1)] = new List<int>();
+                    ArretByID[reader.GetInt32(1)].Add(reader.GetInt32(0));
+                }
+                else
+                {
+                    ArretByID[reader.GetInt32(1)].Add(reader.GetInt32(0));
+                }
+            }
+            reader.Close();
+            return ArretByID;
         }
     }
 

@@ -11,85 +11,96 @@ namespace SAE_S2._02
     /// </summary>
     public class Graphes
     {
-        private List<Arret> arrets;
+        private Dictionary<int, Arret> arrets;
 
-        public Graphes(List<Arret> arrets)
+        public Graphes(Dictionary<int, Arret> arrets)
         {
             this.arrets = arrets;
         }
 
-        public List<Arret> Arrets { get => arrets; set => arrets = value; }
-
-        public string Djikstra(Arret depart, Arret arrivee)
+        public Dictionary<int, Arret> Arrets { get => arrets; set => arrets = value; }
+        
+        public string Djikstra(int idDepart, int idArrivee)
         {
-            var distances = new Dictionary<Arret, double>();
-            var precedent = new Dictionary<Arret, Arret>();
-            var nonVisites = new List<Arret>(arrets);
+            /// <summary>
+            /// Méthode pour calculer le chemin le plus court entre deux arrêts en utilisant l'algorithme de Dijkstra.
+            /// </summary>
+            if (!arrets.ContainsKey(idDepart) || !arrets.ContainsKey(idArrivee))
+                return "Erreur : arrêt de départ ou d’arrivée introuvable.";
 
-            // Initialisation
-            foreach (var arret in arrets)
+            Arret depart = arrets[idDepart];
+            Arret arrivee = arrets[idArrivee];
+
+            var distances = new Dictionary<int, double>();
+            var precedent = new Dictionary<int, int?>();
+            var nonVisites = new HashSet<int>(arrets.Keys);
+
+            foreach (var id in arrets.Keys)
             {
-                distances[arret] = double.MaxValue;
-                precedent[arret] = null;
+                distances[id] = double.MaxValue;
+                precedent[id] = null;
             }
 
-            distances[depart] = 0;
+            distances[idDepart] = 0;
 
             while (nonVisites.Count > 0)
             {
-                // Trouver l'arrêt non visité avec la distance minimale
-                var u = nonVisites.OrderBy(a => distances[a]).First();
+                // Trouver le nœud avec la plus petite distance
+                int u = nonVisites.OrderBy(id => distances[id]).First();
 
-                if (u == arrivee)
+                if (u == idArrivee || distances[u] == double.MaxValue)
                     break;
 
                 nonVisites.Remove(u);
 
-                // Parcourir les successeurs
-                foreach (var voisin in u.Successeurs)
+                foreach (var voisin in arrets[u].Successeurs)
                 {
-                    var v = voisin.Arret;
-                    var alt = distances[u] + voisin.Distance;
+                    int vId = arrets.FirstOrDefault(pair => pair.Value == voisin.Arret).Key;
+                    double alt = distances[u] + voisin.Distance;
 
-                    if (alt < distances[v])
+                    if (alt < distances[vId])
                     {
-                        distances[v] = alt;
-                        precedent[v] = u;
+                        distances[vId] = alt;
+                        precedent[vId] = u;
                     }
                 }
             }
 
-            // Construction du chemin
-            if (distances[arrivee] == double.MaxValue)
+            if (distances[idArrivee] == double.MaxValue)
                 return $"Aucun chemin trouvé de {depart.Nom} à {arrivee.Nom}.";
 
-            var chemin = new Stack<Arret>();
-            var courant = arrivee;
+            // Reconstruction du chemin
+            var chemin = new Stack<int>();
+            int? current = idArrivee;
 
-            while (courant != null)
+            while (current != null)
             {
-                chemin.Push(courant);
-                courant = precedent[courant];
+                chemin.Push(current.Value);
+                current = precedent[current.Value];
             }
 
-            var resultat = new StringBuilder();
-            resultat.AppendLine($"Distance minimale de {depart.Nom} à {arrivee.Nom} : {distances[arrivee]}");
-            resultat.Append("Chemin : ");
+            var sb = new StringBuilder();
+            sb.AppendLine($"Distance minimale de {depart.Nom} à {arrivee.Nom} : {distances[idArrivee]}");
+            sb.Append("Chemin : ");
 
             while (chemin.Count > 0)
             {
-                var a = chemin.Pop();
-                resultat.Append(a.Nom);
+                int id = chemin.Pop();
+                sb.Append(arrets[id].Nom);
                 if (chemin.Count > 0)
-                    resultat.Append(" -> ");
+                    sb.Append(" -> ");
             }
 
-            return resultat.ToString();
+            return sb.ToString();
         }
+
 
 
         public override string ToString()
         {
+            /// <summary>
+            /// Méthode pour afficher le graphe
+            /// </summary>
             string graphes;
             if (arrets != null && arrets.Count > 0)
             {

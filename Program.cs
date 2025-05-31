@@ -4,104 +4,146 @@ using SAE_S2._02;
 using System.Collections.Generic;
 
 BD.Ouverture();
-int[,] construction_matrice(List<Arret> arrets)
+int[,] ConstructionMatrice(Dictionary<int, Arret> arretByID)
 {
-    /// Fonction qui sert à construire une matrice d'adjacence à partir d'une liste d'arrêts.
-    int n = arrets.Count;
+    /// <summary>
+    /// Cette méthode construit une matrice d'adjacence à partir d'un dictionnaire d'arrêts.
+    /// </summary>
+    int n = arretByID.Count;
     int[,] matrice = new int[n, n];
+
+    // Crée un mapping ID -> index (0 à n-1)
+    Dictionary<int, int> idToIndex = new Dictionary<int, int>();
+    Dictionary<int, int> indexToId = new Dictionary<int, int>();
+    int idx = 0;
+    foreach (var id in arretByID.Keys)
+    {
+        idToIndex[id] = idx;
+        indexToId[idx] = id;
+        idx++;
+    }
+
+    // Initialiser la matrice avec "infini"
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            matrice[i, j] = int.MaxValue; // Initialisation à l'infini
+            matrice[i, j] = int.MaxValue;
         }
     }
-    for (int i = 0; i < n; i++)
+
+    // Remplir les distances des successeurs
+    foreach (var pair in arretByID)
     {
-        foreach (ArretAdjacent successeur in arrets[i].Successeurs)
+        int i = idToIndex[pair.Key];
+        foreach (var succ in pair.Value.Successeurs)
         {
-            int j = arrets.IndexOf(successeur.Arret);
-            matrice[i, j] = (int)successeur.Distance; // On met la distance dans la matrice
+            // Chercher l’ID du successeur
+            int succId = arretByID.FirstOrDefault(x => x.Value == succ.Arret).Key;
+            if (idToIndex.ContainsKey(succId))
+            {
+                int j = idToIndex[succId];
+                matrice[i, j] = (int)succ.Distance;
+            }
         }
     }
+
     return matrice;
 }
 
-int nbarrets = 274; 
+// Lecture du nombre d'arrêts dans la base de données
+int nbarrets = BD.LectureNombreArret();
+
+// Initialisation des listes pour stocker les noms et positions des arrêts
 List<string> nom = new List<string>(nbarrets);  
+
 List<Tuple<double, double>> pos = new List<Tuple<double, double>>(nbarrets);
 
-BD.LectureNomArret(ref nom, ref pos, nbarrets);
+// Liste pour stocker les IDs des arrêts
+List<int> idArret = new List<int>(nbarrets);
 
-List<Arret> vraisArrets = new List<Arret>(nbarrets);
+// Dictionnaire pour stocker les arrêts par ID
+Dictionary<int, Arret> ArretByID = new Dictionary<int, Arret>();
 
+
+// Lecture des successeurs et prédécesseurs
+Dictionary<int, List<int>> SuccesseursbyId = BD.LectureSuivant();
+
+Dictionary<int, List<int>> PredecesseursById = BD.LecturePredecesseur();
+
+// Lecture des noms et positions des arrêts
+BD.LectureNomArret(ref nom, ref pos, nbarrets, ref idArret);
+
+
+////Création des arrêts à partir des données lues
 for (int i =0 ; i < nbarrets; i++)
 {
-    vraisArrets.Add(new Arret(nom[i], pos[i].Item1, pos[i].Item2, new List<ArretAdjacent>(), new List<ArretAdjacent>()));
+    ArretByID.Add(idArret[i], new Arret(nom[i], pos[i].Item1, pos[i].Item2, new List<ArretAdjacent>(), new List<ArretAdjacent>(), idArret[i]));
 }
 
-Console.WriteLine($"{vraisArrets.Last()}");
-
-Console.WriteLine($"{vraisArrets.Count} arrêts chargés depuis la base de données.");
-
-Arret arret1 = new Arret("Arret1", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-Arret arret2 = new Arret("Arret2", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-Arret arret3 = new Arret("Arret3", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-Arret arret4 = new Arret("Arret4", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-Arret arret5 = new Arret("Arret5", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-Arret arret6 = new Arret("Arret6", 10.0, 20.0, new List<ArretAdjacent>(), new List<ArretAdjacent>());
-
-
-arret1.Add_predecesseur(new ArretAdjacent(arret3, 5.0, new List<int> { 1 }));
-arret1.Add_predecesseur(new ArretAdjacent(arret6, 12.0, new List<int> { 1 }));
-arret1.Add_successeur(new ArretAdjacent(arret4, 3.0, new List<int> { 1 }));
-
-arret2.Add_predecesseur(new ArretAdjacent(arret3, 15.0, new List<int> { 1 }));
-
-arret3.Add_predecesseur(new ArretAdjacent(arret4, 19.0, new List<int> { 1 }));
-arret3.Add_successeur(new ArretAdjacent(arret1, 5.0, new List<int> { 1 }));
-arret3.Add_successeur(new ArretAdjacent(arret2, 15.0, new List<int> { 1 }));
-arret3.Add_successeur(new ArretAdjacent(arret5, 10.0, new List<int> { 1 }));
-arret3.Add_successeur(new ArretAdjacent(arret6, 20.0, new List<int> { 1 }));
-
-arret4.Add_predecesseur(new ArretAdjacent(arret1, 3.0, new List<int> { 1 }));
-arret4.Add_successeur(new ArretAdjacent(arret3, 19.0, new List<int> { 1 }));
-
-arret5.Add_predecesseur(new ArretAdjacent(arret3, 10.0, new List<int> { 1 }));
-
-arret6.Add_predecesseur(new ArretAdjacent(arret3, 20.0, new List<int> { 1 }));
-arret6.Add_successeur(new ArretAdjacent(arret1, 12.0, new List<int> { 1 }));
-
-List<Arret> arrets = new List<Arret>
+//Ajout des successeurs
+foreach (int id in SuccesseursbyId.Keys)
 {
-    arret1, arret2, arret3, arret4, arret5, arret6
-};
-
-int[,] matrice = construction_matrice(arrets);
-Console.WriteLine($"Matrice d'adjacence des arrêts :");
-
-for (int i = 0; i < matrice.GetLength(0); i++)
-{
-    for (int j = 0; j < matrice.GetLength(1); j++)
+    Arret arret = ArretByID[id];
+    foreach (int adjacentId in SuccesseursbyId[id])
     {
-        if (matrice[i, j] == int.MaxValue)
-            Console.Write("inf\t");
-        else
-            Console.Write($"{matrice[i, j]}\t");
+        arret.Add_successeur(new ArretAdjacent(ArretByID[adjacentId], 1.0, new List<int> { 1 })); // Distance fictive de 1.0
     }
-    Console.WriteLine();
 }
 
-Graphes Reseau = new Graphes(arrets);
+//Ajout des prédécesseurs
+foreach (int id in PredecesseursById.Keys)
+{
+    Arret arret = ArretByID[id];
+    foreach (int adjacentId in PredecesseursById[id])
+    {
+        arret.Add_predecesseur(new ArretAdjacent(ArretByID[adjacentId], 1.0, new List<int> { 1 })); // Distance fictive de 1.0
+    }
+}
 
-Console.WriteLine(Reseau.ToString());
 
-Arret arret_actuel = arret1;
-Arret arret_stop = arret6;
+//Création de la matrice d'adjacence
+int[,] matrice = ConstructionMatrice(ArretByID);
+
+
+//Création du graphe à partir des arrêts
+Graphes Reseau = new Graphes(ArretByID);
+
+//Définition des variables pour les arrêts de départ et d'arrivée
+Arret arret_actuel;
+string nom_arret_actuel;
+Arret arret_stop;
+string nom_arret_stop;
 string chemin="";
 
 
-chemin = Reseau.Djikstra(arret_actuel, arret_stop);
+//Saisie de l'arret de départ et vérifications
+Console.WriteLine("Entrez le nom de l'arrêt de départ :");
+nom_arret_actuel = Console.ReadLine()!;
+arret_actuel = Reseau.Arrets.Values.FirstOrDefault(a => a.Nom.Equals(nom_arret_actuel, StringComparison.OrdinalIgnoreCase))!;
+if (arret_actuel == null)
+{
+    Console.WriteLine("Arrêt de départ non trouvé.");
+    BD.Fermeture();
+    return;
+}
 
-Console.WriteLine($"Chemin le plus court de {arret1.Nom} à {arret_stop.Nom}: {chemin}");
+//Saisie de l'arret d'arrivée et vérifications
+Console.WriteLine("Entrez le nom de l'arrêt d'arrivée :");
+nom_arret_stop = Console.ReadLine()!;
+arret_stop = Reseau.Arrets.Values.FirstOrDefault(a => a.Nom.Equals(nom_arret_stop, StringComparison.OrdinalIgnoreCase))!;
+if (arret_stop == null)
+{
+    Console.WriteLine("Arrêt d'arrivée non trouvé.");
+    BD.Fermeture();
+    return;
+}
+
+
+//Appel de la méthode Djikstra pour trouver le chemin le plus court
+chemin = Reseau.Djikstra(arret_actuel.Id_arret, arret_stop.Id_arret);
+
+
+//Affichage du chemin
+Console.WriteLine($"Chemin le plus court de {arret_actuel.Nom} à {arret_stop.Nom}: {chemin}");
 BD.Fermeture();
