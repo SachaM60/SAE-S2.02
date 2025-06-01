@@ -59,5 +59,32 @@ namespace SAE_S2._02
             // Retourne une représentation en chaîne de caractères de l'arrêt, incluant son nom, sa position, ses prédécesseurs et successeurs
             return $"Arret: {nom}, Position: ({x}, {y}), Predecesseurs: [{string.Join(", ", predecesseurs.Select(a => a.Arret.Nom))}], Successeurs: [{string.Join(", ", successeurs.Select(a => a.Arret.Nom))}], Identifiant : {Id_arret}";
         }
+
+        public double DistanceVers(Arret autre)
+        {
+            const double R = 6371.0; // Rayon de la Terre en kilomètres
+
+            // Conversion des degrés en radians
+            double lat1 = DegreesToRadians(this.y);
+            double lon1 = DegreesToRadians(this.x);
+            double lat2 = DegreesToRadians(autre.y);
+            double lon2 = DegreesToRadians(autre.x);
+
+            double dlat = lat2 - lat1;
+            double dlon = lon2 - lon1;
+
+            double a = Math.Sin(dlat / 2) * Math.Sin(dlat / 2) +
+                       Math.Cos(lat1) * Math.Cos(lat2) *
+                       Math.Sin(dlon / 2) * Math.Sin(dlon / 2);
+
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return R * c;
+        }
+
+        private double DegreesToRadians(double degrees)
+        {
+            return degrees * Math.PI / 180.0;
+        }
     }
 }

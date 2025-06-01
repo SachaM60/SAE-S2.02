@@ -87,7 +87,8 @@ foreach (int id in SuccesseursbyId.Keys)
     Arret arret = ArretByID[id];
     foreach (int adjacentId in SuccesseursbyId[id])
     {
-        arret.Add_successeur(new ArretAdjacent(ArretByID[adjacentId], 1.0, new List<int> { 1 })); // Distance fictive de 1.0
+        double distance = arret.DistanceVers(ArretByID[adjacentId]); // Calcul de la distance entre les arrêts
+        arret.Add_successeur(new ArretAdjacent(ArretByID[adjacentId], distance, new List<int> { 1 })); 
     }
 }
 
@@ -97,9 +98,11 @@ foreach (int id in PredecesseursById.Keys)
     Arret arret = ArretByID[id];
     foreach (int adjacentId in PredecesseursById[id])
     {
-        arret.Add_predecesseur(new ArretAdjacent(ArretByID[adjacentId], 1.0, new List<int> { 1 })); // Distance fictive de 1.0
+        double distance = arret.DistanceVers(ArretByID[adjacentId]); // Calcul de la distance entre les arrêts
+        arret.Add_predecesseur(new ArretAdjacent(ArretByID[adjacentId], distance, new List<int> { 1 })); 
     }
 }
+
 
 
 //Création de la matrice d'adjacence
