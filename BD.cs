@@ -52,7 +52,6 @@ namespace SAE_S2._02
                 idArret.Add(reader.GetInt32(3));
             }
             reader.Close();
-
         }
 
         public static int LectureNombreArret()
@@ -107,6 +106,29 @@ namespace SAE_S2._02
             }
             reader.Close();
             return ArretByID;
+        }
+
+        public static Dictionary<int, List<int>> LectureCroisement()
+        {
+            // Lecture des prédécesseurs des arrêts depuis la base de données
+            Dictionary<int, List<int>> ArretByLigne = new Dictionary<int, List<int>>();
+            string reqSQL = $"SELECT * FROM Croisement;";
+            MySqlCommand cmd = new MySqlCommand(reqSQL, BD.Conn);
+            MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!ArretByLigne.ContainsKey(reader.GetInt32(0)))
+                {
+                    ArretByLigne[reader.GetInt32(0)] = new List<int>();
+                    ArretByLigne[reader.GetInt32(0)].Add(reader.GetInt32(1));
+                }
+                else
+                {
+                    ArretByLigne[reader.GetInt32(0)].Add(reader.GetInt32(1));
+                }
+            }
+            reader.Close();
+            return ArretByLigne;
         }
     }
 

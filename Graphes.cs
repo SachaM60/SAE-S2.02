@@ -19,12 +19,9 @@ namespace SAE_S2._02
         }
 
         public Dictionary<int, Arret> Arrets { get => arrets; set => arrets = value; }
-        
-        public string Djikstra(int idDepart, int idArrivee)
+
+        public string Djikstra(int idDepart, int idArrivee, Dictionary<int, bool> arretFavoris)
         {
-            /// <summary>
-            /// Méthode pour calculer le chemin le plus court entre deux arrêts en utilisant l'algorithme de Dijkstra.
-            /// </summary>
             if (!arrets.ContainsKey(idDepart) || !arrets.ContainsKey(idArrivee))
                 return "Erreur : arrêt de départ ou d’arrivée introuvable.";
 
@@ -45,7 +42,6 @@ namespace SAE_S2._02
 
             while (nonVisites.Count > 0)
             {
-                // Trouver le nœud avec la plus petite distance
                 int u = nonVisites.OrderBy(id => distances[id]).First();
 
                 if (u == idArrivee || distances[u] == double.MaxValue)
@@ -56,7 +52,10 @@ namespace SAE_S2._02
                 foreach (var voisin in arrets[u].Successeurs)
                 {
                     int vId = arrets.FirstOrDefault(pair => pair.Value == voisin.Arret).Key;
-                    double alt = distances[u] + voisin.Distance;
+
+                    // Favoriser les arrêts favoris : appliquer une réduction sur la distance
+                    double bonus = (arretFavoris.TryGetValue(vId, out bool estFavori) && estFavori) ? 0.9 : 1.0;
+                    double alt = distances[u] + (voisin.Distance * bonus);
 
                     if (alt < distances[vId])
                     {
@@ -80,7 +79,7 @@ namespace SAE_S2._02
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"Distance minimale de {depart.Nom} à {arrivee.Nom} : {distances[idArrivee]}");
+            sb.AppendLine($"Temps de trajet de {depart.Nom} à {arrivee.Nom} : {Math.Round(distances[idArrivee] * 60, 0)} minutes.");
             sb.Append("Chemin : ");
 
             while (chemin.Count > 0)
@@ -93,6 +92,7 @@ namespace SAE_S2._02
 
             return sb.ToString();
         }
+
 
 
 
